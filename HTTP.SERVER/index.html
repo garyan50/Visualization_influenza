@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+  <meta charset="utf-8">
+  <title>Influenza Data Visualization</title>
+  <link rel="stylesheet" href="./lib/bootstrap.min.css">
+  <link rel="stylesheet" href="./lib/dashboard.min.css">
+  <link rel="stylesheet" href="./lib/index.css">
+</head>
+
+<body>
+  <script src="./lib/jquery.min.js"></script>
+  <nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
+    <a class="navbar-brand col-md-12" href="#">Flu Detection and Prediction with Text Mining in the United States</a>
+  </nav>
+
+  <div class="container-fluid">
+    <div class="row">
+      <nav class="col-md-2 d-none d-md-block bg-light sidebar">
+        <div class="sidebar-sticky">
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <a class="nav-link active" href="#Map" onclick="view('pastyrs')" id="pastyrs_label">
+                <span data-feather="map"></span>
+                ILI Level Map
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#TextMining" onclick="view('wordsRelation')" id="wordsRelation_label">
+                <span data-feather="layers"></span>
+                Text Mining
+              </a>
+            </li>
+            <!-- <li class="nav-item">
+              <a class="nav-link" href="#SentimentAnalysis" onclick="view('sent')" id="sent_label">
+                <span data-feather="bar-chart-2"></span>
+                Sentiment Analysis
+              </a>
+            </li> -->
+            <li class="nav-item">
+              <a class="nav-link" href="#Predictions" onclick="view('pred')" id="pred_label">
+                <span data-feather="book-open"></span>
+                Predictions
+              </a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+      <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom" id="headline">
+        </div>
+        <div class="embed-responsive embed-responsive-16by9">
+          <iframe class="embed-responsive-item iframe-placeholder" id="showcase" onload="$('#showcase').removeClass('iframe-placeholder')"></iframe>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="./lib/feather.min.js"></script>
+  <script src="./lib/bootstrap.min.js"></script>
+  <script src="./lib/homepage.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,1 @@
+These two folders contained the node-edge graphs generated when querying "influenza" as the head-word. Please open the "influenza.html" to view the result. Clicking the neighbor nodes will call a hyperlink to other words "html".

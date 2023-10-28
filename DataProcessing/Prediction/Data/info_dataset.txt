@@ -1,0 +1,3 @@
+StateDataBySeason.csv: Raw data from CDC website
+final_project.csv: Ordered the data by State name, Week number and Season (Ordering is important for LSTM)
+

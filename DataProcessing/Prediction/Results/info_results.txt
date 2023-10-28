@@ -1,0 +1,11 @@
+These are the results obtained from running the last few cells of the 'one_state_regression_time_series_LSTM.ipynb'
+code. 
+
+state_rmse_train.csv: A csv file that contains the rmse scores obtained by our model, on the training 
+set, for all states. They are arranged in the alphabetical order of states.
+
+state_rmse_test.csv: A csv file that contains the rmse scores obtained by our model, on the test 
+set, for all states. They are arranged in the alphabetical order of states.
+
+us_states_predictions.csv: A csv file that contains all 13 flu season week predictions from our model, for the 
+2018-2019 season, for all the states. This is used in the visualization of our predictions using choropleth.

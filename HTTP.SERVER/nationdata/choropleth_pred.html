@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="../lib/d3.v5.min.js"></script>
+    <script src="../lib/topojson.v2.min.js"></script>
+    <script src="../lib/d3-tip.min.js"></script>
+    <script src="../lib/d3-simple-slider.min.js"></script>
+    <script src="../lib/d3-scale-chromatic.v1.min.js"></script>
+    <title>choropleth</title>
+    <style>
+        .counties {
+          fill: none;
+        }
+
+        .states {
+          fill: none;
+          stroke: #fff;
+          stroke-linejoin: round;
+        }
+
+        .d3-tip {
+          line-height: 1;
+          padding: 6px;
+          background: rgba(0, 0, 0, 0.8);
+          color: #fff;
+          border-radius: 4px;
+          font-size: 12px;
+          width: 120px;
+          height: auto;
+        }
+
+        /* Creates a small triangle extender for the tooltip */
+        .d3-tip:after {
+          box-sizing: border-box;
+          display: inline;
+          font-size: 10px;
+          width: 100%;
+          line-height: 1;
+          color: rgba(0, 0, 0, 0.8);
+          content: "\25BC";
+          position: absolute;
+          text-align: center;
+        }
+
+        /* Style northward tooltips specifically */
+        .d3-tip.n:after {
+          margin: -2px 0 0 0;
+          top: 100%;
+          left: 0;
+        }
+    </style>
+</head>
+<body>
+    <svg width="960" height="600"></svg>
+    <script>
+        //Define map projection
+        var projection = d3.geoAlbersUsa().scale(1000).translate([487.5, 305])
+
+        var path = d3.geoPath().projection(projection);
+
+        var x = d3.scaleLinear()
+                  .domain([1, 10])
+                  .rangeRound([600, 860]);
+
+        var promises = [
+            d3.json("states-10m.json"),
+            d3.csv("us_states_predictions.csv", function(d) {
+                return {
+                    state: d.state,
+                    '40': d['40'], '41': d['41'], '42': d['42'], '43': d['43'],
+                    '44': d['44'], '45': d['45'], '46': d['46'], '47': d['47'],
+                    '48': d['48'], '49': d['49'], '50': d['50'], '51': d['51'],
+                    '52': d['52'],
+                }
+            })
+        ]
+
+        Promise.all(promises).then(ready)
+
+        function ready([us, ILI_level]) {
+            weeks = [41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52];
+            console.log(ILI_level)
+
+            // console.log(ILI_level[0].weekend); // check if weekend has been read in successfully
+            change = function(week) {
+                // console.log(week.toString())
+
+                // Update states
+                states.attr("fill", function(d, i) {
+                            for (var i = 0; i < ILI_level.length; i++) {
+                                if (ILI_level[i].state == d.properties.name) {
+                                    // console.log(ILI_level[i][week.toString()]);
+                                    return colorScale(ILI_level[i][week.toString()]);
+                                }
+                            };
+                       }) // set the color of different states based on the number of ILI_level
+                       .attr("d", path)
+
+                // Update tips
+                // Add tips
+                tip.html(function(d) {
+                    for (var i = 0; i < ILI_level.length; i++) {
+                        if (ILI_level[i].state == d.properties.name) {
+                            level = ILI_level[i][week.toString()];
+                        }
+                    };
+                    return "State: " + d.properties.name
+                            + " ILI_level: " + level;
+                });
+
+                states.call(tip)
+                    .on("mouseover", tip.show)
+                    .on("mouseout", tip.hide);
+            };
+
+            var sliderTime = d3.sliderBottom()
+                               .min(d3.min(weeks))
+                               .max(d3.max(weeks))
+                               .width(750)
+                               .tickFormat(function(d) {
+                                   console.log(d);
+                                   return d;
+                                })
+                                .tickValues(weeks)
+                               .step(1)
+                               .default(weeks[0])
+                               .on('onchange', change);
+
+            var svg = d3.select("svg"),
+            width = +svg.attr("width"),
+            height = +svg.attr("height");
+
+            var slider = svg.append("g")
+                            .attr("class", "slider")
+                            .attr("transform", "translate(" + 80 + "," + 20 + ")")
+                            .call(sliderTime);
+
+
+            slider.append("text")
+                  .style("text-anchor", "middle")
+                  .style("font-family", "sana-serif")
+                  .style("font-size", "15px")
+                  .style("fill", "black")
+                  .style("font-weight", "bold")
+                  .attr("x", -50)
+                  .attr("y", 5)
+                  .text("Weeks")
+
+            // var ILI_week = []; // data from different states for a given week
+            var week = weeks[0];
+
+            var levels = ["Level0", "Level1", "Level2", "Level3",
+                          "Level4", "Level5", "Level6", "Level7",
+                          "Level8", "Level9", "Level10"]
+
+            colorScale = d3.scaleOrdinal()
+                           .range(["#fffaf8", "#fff3ee", "#ffe9e2",
+                                   "#ffded3", "#ffd1c2", "#ffc3b1",
+                                   "#ffb49d", "#ff9174", "#fe6141",
+                                   "#f5331a", "#ef0000"])
+                           .domain(levels)
+
+            // console.log(colorScale("Level 10"))
+
+            // console.log(us);
+            // console.log(ILI_level);
+            svg.append("path")
+                .datum(topojson.mesh(us, us.objects.nation, function(a, b) { return a !== b; }))
+                .attr("class", "states")
+                .attr("d", path);
+
+            states = svg.append("g")
+                        .attr("class", "states")
+                        .selectAll("path")
+                        .data(topojson.feature(us, us.objects.states).features)
+                        .enter().append("path")
+                        .attr("stroke", "black")
+                        .attr("fill", function(d, i) {
+                            // console.log(d.properties.name);
+                            // console.log(d);
+                            for (var i = 0; i < ILI_level.length; i++) {
+                                if (ILI_level[i].state == d.properties.name) {
+                                    // console.log(ILI_level[i][week.toString()]);
+                                    // console.log(colorScale(ILI_level[i][week.toString()]))
+                                    return colorScale(ILI_level[i][week.toString()]);
+                                }
+                            };
+                        })
+                        .attr("d", path)
+
+            // svg.append("text")
+            //    .style("text-anchor", "middle")
+            //    .style("font-family", "sana-serif")
+            //    .style("font-size", "20px")
+            //    .style("fill", "black")
+            //    .attr("x", 500)
+            //    .attr("y", 600)
+            //    .text("Prediction of ILI Activity Level From Week 40 to Week 52 in 2018-2019");
+
+            // Add tips
+            tip = d3.tip()
+                    .attr("class", "d3-tip")
+                    .html(function(d) {
+                        for (var i = 0; i < ILI_level.length; i++) {
+                            if (ILI_level[i].state == d.properties.name) {
+                                level = ILI_level[i][week.toString()];
+                                // region = ILI_level[i].region;
+                            }
+                        };
+                        return "State: " + d.properties.name
+                                // + " Region: " + region
+                                // + " Year: " + "2010"
+                                + " ILI_level: " + level;
+                    });
+
+            states.call(tip)
+                  .on("mouseover", tip.show)
+                  .on("mouseout", tip.hide);
+
+            // Add legends
+            var legends = svg.append("g")
+                             .selectAll(".legend")
+                             .data(levels);
+
+            rectLen = 20
+            legends.enter()
+                   .append("rect")
+                   .attr("fill", function(d) {
+                    //    console.log(d);
+                       return colorScale(d);
+                   })
+                   .attr("x", width-100)
+                   .attr("y", function(d, i) {
+                    return i * (rectLen/2 + 5)+100;
+                   })
+                   .attr("height",rectLen/2)
+                   .attr("width", rectLen);
+
+            texts = legends.enter()
+                           .append("text")
+                           .style("text-anchor", "middle")
+                           .style("font-family", "sana-serif")
+                           .style("font-size", "10px")
+                           .style("fill", "black")
+                           .attr("x", width-100 + 2 * rectLen)
+                           .attr("y", function(d, i) {
+                               return i * (rectLen/2 + 5)+109;
+                           })
+                           .text(function(d, i) {
+                               return d;
+                           });
+}
+    </script>
+</body>
+</html>
